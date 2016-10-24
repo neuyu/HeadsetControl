@@ -1,0 +1,21 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven { url "https://dl.bintray.com/drummer-aidan/maven" }
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.2.2'
+        classpath 'com.jakewharton.hugo:hugo-plugin:1.2.1'
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+        maven { url "https://dl.bintray.com/drummer-aidan/maven" }
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

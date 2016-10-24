@@ -1,0 +1,33 @@
+<resources>
+
+    <string name="app_name">HeadSetControl</string>
+    <string name="launch_camera">自拍视频</string>
+    <string name="launch_camera_stillshot">自拍照片</string>
+    <string name="length_limit">Length Limit</string>
+    <string name="zero_minutes">0 minutes</string>
+    <string name="allow_retry">Allow Retry</string>
+    <string name="auto_submit">Auto Submit</string>
+    <string name="portrait_warning">Show Portrait Warning</string>
+    <string name="default_front_facing">Default Front Facing</string>
+    <string name="save_folder">Save Folder</string>
+    <string name="camera_primary_color">Camera UI Color</string>
+    <string name="demo_from_activity">自拍杆测试</string>
+
+
+    <string name="mcam_defaultDuration">00:00</string>
+    <string name="mcam_permissions_needed">必需权限</string>
+    <string name="mcam_video_perm_warning">相机应用需要开放相机权限，否则应用无法正常运行</string>
+    <string name="mcam_retry">重拍</string>
+    <string name="mcam_use_video">保存视频</string>
+    <string name="mcam_use_stillshot">保存图片</string>
+    <string name="mcam_portrait">横屏</string>
+    <string name="mcam_portrait_warning">强烈建议你使用横屏录制视频. 使用横屏录制视频吗?</string>
+    <string name="mcam_yes">是</string>
+    <string name="mcam_error">否</string>
+    <string name="mcam_video_capture_unsupported">你的设备不支持视频录制。</string>
+    <string name="mcam_no_audio_access">无法获取音频权限</string>
+    <string name="mcam_file_size_limit_reached">你已达到最大文件存储!</string>
+    <string name="mcam_image_preview_error_title">图片预览失败</string>
+    <string name="mcam_image_preview_error_message">无法解码Bitmap</string>
+
+</resources>
