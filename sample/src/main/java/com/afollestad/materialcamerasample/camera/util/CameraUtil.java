@@ -89,10 +89,10 @@ public class CameraUtil {
                 ArrayList<Integer> flashModes = new ArrayList<>();
                 for (String mode : modes) {
                     switch (mode) {
-                        case Camera.Parameters.FLASH_MODE_AUTO:
+                       /* case Camera.Parameters.FLASH_MODE_AUTO:
                             if (!flashModes.contains(BaseCaptureActivity.FLASH_MODE_AUTO))
                                 flashModes.add(BaseCaptureActivity.FLASH_MODE_AUTO);
-                            break;
+                            break;*/
                         case Camera.Parameters.FLASH_MODE_ON:
                             if (!flashModes.contains(BaseCaptureActivity.FLASH_MODE_ALWAYS_ON))
                                 flashModes.add(BaseCaptureActivity.FLASH_MODE_ALWAYS_ON);

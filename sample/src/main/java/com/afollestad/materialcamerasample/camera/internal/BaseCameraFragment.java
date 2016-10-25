@@ -150,14 +150,7 @@ abstract class BaseCameraFragment extends Fragment implements CameraUriInterface
         mButtonFlash.setOnClickListener(this);
         mViewPreview.setOnClickListener(this);
 
-        int primaryColor = getArguments().getInt(CameraIntentKey.PRIMARY_COLOR);
-        if (CameraUtil.isColorDark(primaryColor)) {
-            mIconTextColor = ContextCompat.getColor(getActivity(), R.color.mcam_color_light);
-            primaryColor = CameraUtil.darkenColor(primaryColor);
-        } else {
-            mIconTextColor = ContextCompat.getColor(getActivity(), R.color.mcam_color_dark);
-        }
-        view.findViewById(R.id.controlsFrame).setBackgroundColor(primaryColor);
+        mIconTextColor = ContextCompat.getColor(getActivity(), R.color.mcam_color_light);
         mRecordDuration.setTextColor(mIconTextColor);
 
         if (mMediaRecorder != null && mIsRecording) {

@@ -14,7 +14,7 @@ import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
-import android.widget.RelativeLayout;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.afollestad.materialcamerasample.R;
@@ -45,7 +45,7 @@ import static com.afollestad.materialcamerasample.camera.internal.BaseCaptureAct
 public class CameraFragment extends BaseCameraFragment implements View.OnClickListener {
 
     private CameraPreview mPreviewView;
-    RelativeLayout mPreviewFrame;
+    FrameLayout mPreviewFrame;
 
     private Camera.Size mVideoSize;
     private Camera mCamera;
@@ -102,7 +102,7 @@ public class CameraFragment extends BaseCameraFragment implements View.OnClickLi
     @Override
     public void onViewCreated(final View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mPreviewFrame = (RelativeLayout) view.findViewById(R.id.rootFrame);
+        mPreviewFrame = (FrameLayout) view.findViewById(R.id.rootFrame);
         mPreviewFrame.setOnClickListener(this);
     }
 

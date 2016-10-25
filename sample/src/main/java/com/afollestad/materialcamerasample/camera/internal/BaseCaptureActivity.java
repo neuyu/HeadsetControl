@@ -309,18 +309,18 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
             deleteOutputFile(outputUri);
         if (!shouldAutoSubmit() || restartTimerOnRetry())
             setRecordingStart(-1);
-        if (getIntent().getBooleanExtra(CameraIntentKey.RETRY_EXITS, false)) {
-            Intent intent = getIntent();
-            intent.putExtra(MaterialCamera.STATUS_EXTRA, MaterialCamera.STATUS_RETRY);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-            overridePendingTransition(0, 0);
-            startActivity(intent);
-            finish();
-            return;
+
+
+        Intent intent = getIntent();
+        if (getCurrentCameraPosition() == CAMERA_POSITION_FRONT){
+            intent.putExtra(CameraIntentKey.DEFAULT_TO_FRONT_FACING, true);
         }
-        getFragmentManager().beginTransaction()
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+        overridePendingTransition(0, 0);
+        startActivity(intent);
+       /* getFragmentManager().beginTransaction()
                 .replace(R.id.container, createFragment())
-                .commit();
+                .commit();*/
     }
 
     @Override
@@ -492,13 +492,13 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
     @DrawableRes
     @Override
     public int iconPause() {
-        return getIntent().getIntExtra(CameraIntentKey.ICON_PAUSE, R.drawable.evp_action_pause);
+        return getIntent().getIntExtra(CameraIntentKey.ICON_PAUSE, R.drawable.icon_video_play_stop);
     }
 
     @DrawableRes
     @Override
     public int iconPlay() {
-        return getIntent().getIntExtra(CameraIntentKey.ICON_PLAY, R.drawable.evp_action_play);
+        return getIntent().getIntExtra(CameraIntentKey.ICON_PLAY, R.drawable.icon_video_play_start);
     }
 
     @DrawableRes
@@ -510,25 +510,25 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
     @DrawableRes
     @Override
     public int iconRearCamera() {
-        return getIntent().getIntExtra(CameraIntentKey.ICON_REAR_CAMERA, R.drawable.mcam_camera_rear);
+        return getIntent().getIntExtra(CameraIntentKey.ICON_REAR_CAMERA, R.drawable.exchange);
     }
 
     @DrawableRes
     @Override
     public int iconFrontCamera() {
-        return getIntent().getIntExtra(CameraIntentKey.ICON_FRONT_CAMERA, R.drawable.mcam_camera_front);
+        return getIntent().getIntExtra(CameraIntentKey.ICON_FRONT_CAMERA, R.drawable.exchange);
     }
 
     @DrawableRes
     @Override
     public int iconStop() {
-        return getIntent().getIntExtra(CameraIntentKey.ICON_STOP, R.drawable.mcam_action_stop);
+        return getIntent().getIntExtra(CameraIntentKey.ICON_STOP, R.drawable.icon_video_record);
     }
 
     @DrawableRes
     @Override
     public int iconRecord() {
-        return getIntent().getIntExtra(CameraIntentKey.ICON_RECORD, R.drawable.mcam_action_capture);
+        return getIntent().getIntExtra(CameraIntentKey.ICON_RECORD, R.drawable.icon_video);
     }
 
     @StringRes
@@ -553,7 +553,7 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
     @DrawableRes
     @Override
     public int iconStillshot() {
-        return getIntent().getIntExtra(CameraIntentKey.ICON_STILL_SHOT, R.drawable.mcam_action_stillshot);
+        return getIntent().getIntExtra(CameraIntentKey.ICON_STILL_SHOT, R.drawable.icon_camera);
     }
 
     @Override
@@ -564,19 +564,19 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
     @DrawableRes
     @Override
     public int iconFlashAuto() {
-        return getIntent().getIntExtra(CameraIntentKey.ICON_FLASH_AUTO, R.drawable.mcam_action_flash_auto);
+        return getIntent().getIntExtra(CameraIntentKey.ICON_FLASH_AUTO, R.drawable.flash_on);
     }
 
     @DrawableRes
     @Override
     public int iconFlashOn() {
-        return getIntent().getIntExtra(CameraIntentKey.ICON_FLASH_ON, R.drawable.mcam_action_flash);
+        return getIntent().getIntExtra(CameraIntentKey.ICON_FLASH_ON, R.drawable.flash_on);
     }
 
     @DrawableRes
     @Override
     public int iconFlashOff() {
-        return getIntent().getIntExtra(CameraIntentKey.ICON_FLASH_OFF, R.drawable.mcam_action_flash_off);
+        return getIntent().getIntExtra(CameraIntentKey.ICON_FLASH_OFF, R.drawable.flash_off);
     }
 
     @Override

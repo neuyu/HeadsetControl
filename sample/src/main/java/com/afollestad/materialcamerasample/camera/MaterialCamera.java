@@ -57,7 +57,7 @@ public class MaterialCamera {
     private boolean mAutoSubmit = false;
     private String mSaveDir;
     private int mPrimaryColor;
-    private boolean mShowPortraitWarning = true;
+    private boolean mShowPortraitWarning = false;
     private boolean mDefaultToFrontFacing = false;
     private boolean mCountdownImmediately = false;
     private boolean mRetryExists = false;

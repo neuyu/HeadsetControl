@@ -97,11 +97,13 @@ public class StillshotPreviewFragment extends BaseGalleryFragment {
     public void onClick(View v) {
         if (v.getId() == R.id.retry)
             mInterface.onRetry(mOutputUri);
-        else if (v.getId() == R.id.confirm)
+        else if (v.getId() == R.id.confirm) {
             useVideo();
-        if (getActivity() != null && !getActivity().isFinishing()){
+        }
+        if (getActivity() != null && !getActivity().isFinishing()) {
             getActivity().finish();
         }
+
     }
 
     public void useVideo() {
