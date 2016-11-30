@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.media.CamcorderProfile;
 import android.net.Uri;
@@ -300,6 +301,15 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
     @Override
     public void onShowStillshot(String outputUri) {
         Fragment frag = StillshotPreviewFragment.newInstance(outputUri, true,
+                getIntent().getIntExtra(CameraIntentKey.PRIMARY_COLOR, 0));
+        getFragmentManager().beginTransaction()
+                .replace(R.id.container, frag)
+                .commit();
+    }
+
+    @Override
+    public void onShowStillshot(Bitmap bitmap, String outputUri) {
+        Fragment frag = StillshotPreviewFragment.newInstance(bitmap,outputUri, true,
                 getIntent().getIntExtra(CameraIntentKey.PRIMARY_COLOR, 0));
         getFragmentManager().beginTransaction()
                 .replace(R.id.container, frag)

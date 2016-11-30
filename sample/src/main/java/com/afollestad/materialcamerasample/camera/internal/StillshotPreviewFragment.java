@@ -37,6 +37,18 @@ public class StillshotPreviewFragment extends BaseGalleryFragment {
         return fragment;
     }
 
+    public static StillshotPreviewFragment newInstance(Bitmap bitmap, String outputUri, boolean allowRetry, int primaryColor) {
+        final StillshotPreviewFragment fragment = new StillshotPreviewFragment();
+        //fragment.setRetainInstance(true);
+        Bundle args = new Bundle();
+        args.putParcelable("bitmap",bitmap);
+        args.putString("output_uri", outputUri);
+        args.putBoolean(CameraIntentKey.ALLOW_RETRY, allowRetry);
+        args.putInt(CameraIntentKey.PRIMARY_COLOR, primaryColor);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -90,6 +102,8 @@ public class StillshotPreviewFragment extends BaseGalleryFragment {
         final int height = mImageView.getMeasuredHeight();
 
         // TODO IMPROVE MEMORY USAGE HERE, ESPECIALLY ON LOW-END DEVICES.
+        Bitmap bitmap = getArguments().getParcelable("bitmap");
+        if (bitmap != null) mBitmap = bitmap;
         if (mBitmap == null)
             mBitmap = ImageUtil.getRotatedBitmap(Uri.parse(mOutputUri).getPath(), width, height);
 

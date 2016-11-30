@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
+import android.media.ThumbnailUtils;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -36,23 +37,53 @@ public class ImageUtil {
                 try {
                     byte[] resolvedInput = input;
                     if (fragment.isFrontCamera()) {
-                        resolvedInput = mirrorImg(input);
+                        Bitmap thumbnailImg = null;
+                        Bitmap newBitmap = null;
+                        Bitmap cameraBitmap;
+                        cameraBitmap = BitmapFactory.decodeByteArray(resolvedInput, 0, resolvedInput.length);
+                        // use matrix to reverse image data and keep it normal
+                        Matrix mtx = new Matrix();
+                        //this will prevent mirror effect
+                        mtx.preScale(-1.0f, 1.0f);
+                        // Rotating Bitmap , create real imae that we want
+                        thumbnailImg = Bitmap.createBitmap(cameraBitmap, 0, 0, cameraBitmap.getWidth(), cameraBitmap.getHeight(), mtx, true);
+                        thumbnailImg = ThumbnailUtils.extractThumbnail(thumbnailImg, cameraBitmap.getWidth(), cameraBitmap.getHeight());
+
+                        final Bitmap finalThumbnailImg = thumbnailImg;
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                callback.done(finalThumbnailImg, null);
+                            }
+                        });
+
+                        newBitmap = Bitmap.createBitmap(cameraBitmap, 0, 0, cameraBitmap.getWidth(), cameraBitmap.getHeight(), mtx, true);
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        newBitmap.compress(Bitmap.CompressFormat.PNG, 50, baos);
+
+                        FileOutputStream outputStream = new FileOutputStream(output);
+                        outputStream.write(baos.toByteArray());
+                        outputStream.flush();
+                        outputStream.close();
+
+                    }else {
+                        FileOutputStream outputStream = new FileOutputStream(output);
+                        outputStream.write(resolvedInput);
+                        outputStream.flush();
+                        outputStream.close();
+
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                callback.done(null, null);
+                            }
+                        });
                     }
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            callback.done(null);
-                        }
-                    });
-                    FileOutputStream outputStream = new FileOutputStream(output);
-                    outputStream.write(resolvedInput);
-                    outputStream.flush();
-                    outputStream.close();
                 } catch (final Exception e) {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            callback.done(e);
+                            callback.done(null, e);
                         }
                     });
                 }
@@ -74,7 +105,7 @@ public class ImageUtil {
             // Rotating Bitmap , create real image that we want
             newImage = Bitmap.createBitmap(cameraBitmap, 0, 0, cameraBitmap.getWidth(), cameraBitmap.getHeight(), mtx, true);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            newImage.compress(Bitmap.CompressFormat.PNG, 50, baos);
+            newImage.compress(Bitmap.CompressFormat.PNG, 100, baos);
             return baos.toByteArray();
         }
         return null;
@@ -93,8 +124,8 @@ public class ImageUtil {
     }
 
     /**
-     * Rotates the bitmap per their EXIF flag. This is a recursive function that will
-     * be called again if the image needs to be downsized more.
+     * Rotates the bitmap per their EXIF flag. This is a recursive function that will be called
+     * again if the image needs to be downsized more.
      *
      * @param inputFile Expects an JPEG file if corrected orientation wants to be set.
      * @return rotated bitmap or null

@@ -1,5 +1,6 @@
 package com.afollestad.materialcamerasample.camera.internal;
 
+import android.graphics.Bitmap;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
@@ -14,6 +15,9 @@ public interface BaseCaptureInterface {
     void onShowPreview(@Nullable String outputUri, boolean countdownIsAtZero);
 
     void onShowStillshot(String outputUri);
+
+    void onShowStillshot(Bitmap bitmap,String outputUri);
+
 
     void setRecordingStart(long start);
 

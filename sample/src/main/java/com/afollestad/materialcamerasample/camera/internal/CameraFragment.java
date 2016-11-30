@@ -5,6 +5,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
@@ -493,11 +494,15 @@ public class CameraFragment extends BaseCameraFragment implements View.OnClickLi
                 // lets save the image to disk
                 ImageUtil.saveToDiskAsync(CameraFragment.this, data, outputPic, new ICallback() {
                     @Override
-                    public void done(Exception e) {
+                    public void done(Bitmap bitmap ,Exception e) {
                         if (e == null) {
                             mOutputUri = outputPic.getAbsolutePath();
-                            mInterface.onShowStillshot(mOutputUri);
                             mButtonStillshot.setEnabled(true);
+                            if (bitmap == null){
+                                mInterface.onShowStillshot(mOutputUri);
+                            }else {
+                                mInterface.onShowStillshot(bitmap,mOutputUri);
+                            }
                         } else {
                             throwError(e);
                         }
