@@ -31,13 +31,12 @@ public abstract class BaseGalleryFragment extends Fragment implements CameraUriI
     @Override
     public void onResume() {
         super.onResume();
-        if (getActivity() != null)
-            getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         mOutputUri = getArguments().getString("output_uri");
         mControlsFrame = view.findViewById(R.id.controlsFrame);
         mRetry = (Button) view.findViewById(R.id.retry);

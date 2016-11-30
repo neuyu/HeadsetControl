@@ -9,7 +9,9 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.afollestad.materialcamerasample.camera.ICallback;
+import com.afollestad.materialcamerasample.camera.internal.CameraFragment;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -25,14 +27,19 @@ public class ImageUtil {
      * @param output   path to output file
      * @param callback will always return in originating thread
      */
-    public static void saveToDiskAsync(final byte[] input, final File output, final ICallback callback) {
-        final Handler handler = new Handler();
+
+    public static void saveToDiskAsync(final CameraFragment fragment, final byte[] input, final File output, final ICallback callback) {
+        final Handler handler = new Handler(fragment.getActivity().getMainLooper());
         new Thread() {
             @Override
             public void run() {
                 try {
+                    byte[] resolvedInput = input;
+                    if (fragment.isFrontCamera()) {
+                        resolvedInput = mirrorImg(input);
+                    }
                     FileOutputStream outputStream = new FileOutputStream(output);
-                    outputStream.write(input);
+                    outputStream.write(resolvedInput);
                     outputStream.flush();
                     outputStream.close();
                     handler.post(new Runnable() {
@@ -52,6 +59,25 @@ public class ImageUtil {
             }
         }.start();
     }
+
+    private static byte[] mirrorImg(byte[] data) {
+        Bitmap newImage = null;
+        Bitmap cameraBitmap;
+        if (data != null) {
+            cameraBitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+            // use matrix to reverse image data and keep it normal
+            Matrix mtx = new Matrix();
+            //this will prevent mirror effect
+            mtx.preScale(-1.0f, 1.0f);
+            // Rotating Bitmap , create real image that we want
+            newImage = Bitmap.createBitmap(cameraBitmap, 0, 0, cameraBitmap.getWidth(), cameraBitmap.getHeight(), mtx, true);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            newImage.compress(Bitmap.CompressFormat.PNG, 50, baos);
+            return baos.toByteArray();
+        }
+        return null;
+    }
+
 
     /**
      * Helper function for getRotatedBitmap(String, int, int, int)

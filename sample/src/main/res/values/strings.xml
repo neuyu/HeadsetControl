@@ -1,6 +1,6 @@
 <resources>
 
-    <string name="app_name">HeadSetControl</string>
+    <string name="app_name">麦克秀</string>
     <string name="launch_camera">自拍视频</string>
     <string name="launch_camera_stillshot">自拍照片</string>
     <string name="length_limit">Length Limit</string>
@@ -29,5 +29,9 @@
     <string name="mcam_file_size_limit_reached">你已达到最大文件存储!</string>
     <string name="mcam_image_preview_error_title">图片预览失败</string>
     <string name="mcam_image_preview_error_message">无法解码Bitmap</string>
+
+    <string name="mcam_next_video">下一个</string>
+    <string name="mcam_before_video">上一个</string>
+
 
 </resources>

@@ -4,8 +4,6 @@ import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 
-import java.util.List;
-
 /**
  * @author Aidan Follestad (afollestad)
  */
@@ -25,11 +23,8 @@ public interface BaseCaptureInterface {
 
     long getRecordingEnd();
 
-    boolean hasLengthLimit();
-
     boolean countdownImmediately();
 
-    long getLengthLimit();
 
     void setCameraPosition(int position);
 
@@ -51,8 +46,6 @@ public interface BaseCaptureInterface {
     void useVideo(String uri);
 
     boolean shouldAutoSubmit();
-
-    boolean allowRetry();
 
     void setDidRecord(boolean didRecord);
 
@@ -93,35 +86,17 @@ public interface BaseCaptureInterface {
 
     @DrawableRes
     int iconPause();
-
-    @DrawableRes
-    int iconRestart();
-
     @StringRes
     int labelRetry();
-
-    @Deprecated
-    @StringRes
-    int labelUseVideo();
-
-    @StringRes
-    int labelConfirm();
-
-    @DrawableRes
-    int iconStillshot();
 
     /**
      * @return true if we only want to take photographs instead of video capture
      */
     boolean useStillshot();
 
-    void toggleFlashMode();
-
     @BaseCaptureActivity.FlashMode
     int getFlashMode();
 
-    @DrawableRes
-    int iconFlashAuto();
 
     @DrawableRes
     int iconFlashOn();
@@ -129,9 +104,12 @@ public interface BaseCaptureInterface {
     @DrawableRes
     int iconFlashOff();
 
-    void setFlashModes(List<Integer> modes);
-
-    boolean shouldHideFlash();
+    void setFlashModes(Integer modes);
 
     long autoRecordDelay();
+
+    void fromVideo(boolean fromVideo);
+
+    boolean fragmentFromVideo();
+
 }

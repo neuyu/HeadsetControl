@@ -6,6 +6,8 @@ import android.bluetooth.BluetoothDevice;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.umeng.analytics.MobclickAgent;
+
 import java.util.Set;
 
 /**
@@ -22,6 +24,7 @@ public class MuApplication extends Application {
         super.onCreate();
         sInstance = this;
         getConnectedBluetooth();
+        MobclickAgent.openActivityDurationTrack(false);
     }
 
     private void getConnectedBluetooth() {

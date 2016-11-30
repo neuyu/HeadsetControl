@@ -25,14 +25,13 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import com.afollestad.materialcamerasample.R;
-import com.afollestad.materialcamerasample.camera.MaterialCamera;
-import com.afollestad.materialcamerasample.camera.TimeLimitReachedException;
 import com.afollestad.materialcamerasample.camera.util.CameraUtil;
 import com.afollestad.materialdialogs.MaterialDialog;
 
 import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -40,17 +39,15 @@ import java.util.List;
  */
 public abstract class BaseCaptureActivity extends AppCompatActivity implements BaseCaptureInterface {
 
-    private int mCameraPosition = CAMERA_POSITION_UNKNOWN;
+    private int mCameraPosition = CAMERA_POSITION_BACK;
     private int mFlashMode = FLASH_MODE_OFF;
     private boolean mRequestingPermission;
     private long mRecordingStart = -1;
     private long mRecordingEnd = -1;
-    private long mLengthLimit = -1;
     private Object mFrontCameraId;
     private Object mBackCameraId;
     private boolean mDidRecord = false;
-    private List<Integer> mFlashModes;
-
+    private boolean fromVideo = false;
     public static final int PERMISSION_RC = 69;
 
     @IntDef({CAMERA_POSITION_UNKNOWN, CAMERA_POSITION_BACK, CAMERA_POSITION_FRONT})
@@ -78,7 +75,6 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
         outState.putBoolean("requesting_permission", mRequestingPermission);
         outState.putLong("recording_start", mRecordingStart);
         outState.putLong("recording_end", mRecordingEnd);
-        outState.putLong(CameraIntentKey.LENGTH_LIMIT, mLengthLimit);
         if (mFrontCameraId instanceof String) {
             outState.putString("front_camera_id_str", (String) mFrontCameraId);
             outState.putString("back_camera_id_str", (String) mBackCameraId);
@@ -92,21 +88,9 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
     }
 
     @Override
-    protected final void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (!CameraUtil.hasCamera(this)) {
-            new MaterialDialog.Builder(this)
-                    .title(R.string.mcam_error)
-                    .content(R.string.mcam_video_capture_unsupported)
-                    .positiveText(android.R.string.ok)
-                    .dismissListener(new DialogInterface.OnDismissListener() {
-                        @Override
-                        public void onDismiss(DialogInterface dialog) {
-                            finish();
-                        }
-                    }).show();
-            return;
-        }
+
         setContentView(R.layout.mcam_activity_videocapture);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -125,13 +109,11 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
 
         if (null == savedInstanceState) {
             checkPermissions();
-            mLengthLimit = getIntent().getLongExtra(CameraIntentKey.LENGTH_LIMIT, -1);
         } else {
             mCameraPosition = savedInstanceState.getInt("camera_position", -1);
             mRequestingPermission = savedInstanceState.getBoolean("requesting_permission", false);
             mRecordingStart = savedInstanceState.getLong("recording_start", -1);
             mRecordingEnd = savedInstanceState.getLong("recording_end", -1);
-            mLengthLimit = savedInstanceState.getLong(CameraIntentKey.LENGTH_LIMIT, -1);
             if (savedInstanceState.containsKey("front_camera_id_str")) {
                 mFrontCameraId = savedInstanceState.getString("front_camera_id_str");
                 mBackCameraId = savedInstanceState.getString("back_camera_id_str");
@@ -153,21 +135,25 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
         }
         final boolean cameraGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
         final boolean audioGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
-        final boolean audioNeeded = !useStillshot();
+        final boolean sdcardGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
 
-        String[] perms = null;
-        if (cameraGranted) {
-            if (audioNeeded && !audioGranted) {
-                perms = new String[]{Manifest.permission.RECORD_AUDIO};
-            }
-        } else {
-            if (audioNeeded && !audioGranted) {
-                perms = new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO};
-            } else {
-                perms = new String[]{Manifest.permission.CAMERA};
-            }
+        List<String> list = new ArrayList<>();
+        if (!cameraGranted) {
+            list.add(Manifest.permission.CAMERA);
+        }
+        if (!audioGranted) {
+            list.add(Manifest.permission.RECORD_AUDIO);
+        }
+        if (!sdcardGranted) {
+            list.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
         }
 
+        String[] perms = null;
+
+        if (list.size() > 0) {
+            perms = new String[list.size()];
+            perms = list.toArray(perms); // fill the array
+        }
         if (perms != null) {
             ActivityCompat.requestPermissions(this, perms, PERMISSION_RC);
             mRequestingPermission = true;
@@ -177,27 +163,29 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
     }
 
     @Override
-    protected final void onPause() {
-        super.onPause();
-        /*if (!isFinishing() && !isChangingConfigurations() && !mRequestingPermission)
-            finish();*/
-    }
-
-    @Override
     public final void onBackPressed() {
         Fragment frag = getFragmentManager().findFragmentById(R.id.container);
         if (frag != null) {
-            if (frag instanceof PlaybackVideoFragment && allowRetry()) {
+            if (frag instanceof PlaybackVideoFragment) {
+                onRetry(((CameraUriInterface) frag).getOutputUri());
+                return;
+            } else if (frag instanceof BaseGalleryFragment) {
                 onRetry(((CameraUriInterface) frag).getOutputUri());
                 return;
             } else if (frag instanceof BaseCameraFragment) {
                 ((BaseCameraFragment) frag).cleanup();
-            } else if (frag instanceof BaseGalleryFragment && allowRetry()) {
-                onRetry(((CameraUriInterface) frag).getOutputUri());
-                return;
+                exitApp();
             }
         }
+    }
+
+    private void exitApp() {
         finish();
+        int id = android.os.Process.myPid();
+        if (id != 0) {
+            android.os.Process.killProcess(id);
+        }
+        System.exit(0);
     }
 
     @NonNull
@@ -212,9 +200,7 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
     @Override
     public void setRecordingStart(long start) {
         mRecordingStart = start;
-        if (start > -1 && hasLengthLimit())
-            setRecordingEnd(mRecordingStart + getLengthLimit());
-        else setRecordingEnd(-1);
+        setRecordingEnd(-1);
     }
 
     @Override
@@ -230,16 +216,6 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
     @Override
     public long getRecordingEnd() {
         return mRecordingEnd;
-    }
-
-    @Override
-    public long getLengthLimit() {
-        return mLengthLimit;
-    }
-
-    @Override
-    public boolean hasLengthLimit() {
-        return getLengthLimit() > -1;
     }
 
     @Override
@@ -309,61 +285,25 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
             deleteOutputFile(outputUri);
         if (!shouldAutoSubmit() || restartTimerOnRetry())
             setRecordingStart(-1);
-
-
-        Intent intent = getIntent();
-        if (getCurrentCameraPosition() == CAMERA_POSITION_FRONT){
-            intent.putExtra(CameraIntentKey.DEFAULT_TO_FRONT_FACING, true);
-        }
-        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-        overridePendingTransition(0, 0);
-        startActivity(intent);
-       /* getFragmentManager().beginTransaction()
-                .replace(R.id.container, createFragment())
-                .commit();*/
     }
 
     @Override
     public final void onShowPreview(@Nullable final String outputUri, boolean countdownIsAtZero) {
-        if ((shouldAutoSubmit() && (countdownIsAtZero || !allowRetry() || !hasLengthLimit())) || outputUri == null) {
-            if (outputUri == null) {
-
-                Intent intent = getIntent();
-                intent.putExtra(MaterialCamera.ERROR_EXTRA, new TimeLimitReachedException());
-                intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-                overridePendingTransition(0, 0);
-                startActivity(intent);
-
-                /*setResult(RESULT_CANCELED, new Intent().putExtra(MaterialCamera.ERROR_EXTRA,
-                        new TimeLimitReachedException()));*/
-                finish();
-                return;
-            }
-            useVideo(outputUri);
-        } else {
-            if (!hasLengthLimit() || !continueTimerInPlayback()) {
-                // No countdown or countdown should not continue through playback, reset timer to 0
-                setRecordingStart(-1);
-            }
-            Fragment frag = PlaybackVideoFragment.newInstance(outputUri, allowRetry(),
-                    getIntent().getIntExtra(CameraIntentKey.PRIMARY_COLOR, 0));
-            getFragmentManager().beginTransaction()
-                    .replace(R.id.container, frag)
-                    .commit();
-        }
-    }
-
-    @Override
-    public void onShowStillshot(String outputUri) {
-        Fragment frag = StillshotPreviewFragment.newInstance(outputUri, allowRetry(),
+        setRecordingStart(-1);
+        Fragment frag = PlaybackVideoFragment.newInstance(outputUri, true,
                 getIntent().getIntExtra(CameraIntentKey.PRIMARY_COLOR, 0));
         getFragmentManager().beginTransaction()
                 .replace(R.id.container, frag)
                 .commit();
     }
+
     @Override
-    public final boolean allowRetry() {
-        return getIntent().getBooleanExtra(CameraIntentKey.ALLOW_RETRY, true);
+    public void onShowStillshot(String outputUri) {
+        Fragment frag = StillshotPreviewFragment.newInstance(outputUri, true,
+                getIntent().getIntExtra(CameraIntentKey.PRIMARY_COLOR, 0));
+        getFragmentManager().beginTransaction()
+                .replace(R.id.container, frag)
+                .commit();
     }
 
     @Override
@@ -387,20 +327,23 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
     public final void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         mRequestingPermission = false;
-        if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-            new MaterialDialog.Builder(this)
-                    .title(R.string.mcam_permissions_needed)
-                    .content(R.string.mcam_video_perm_warning)
-                    .positiveText(android.R.string.ok)
-                    .dismissListener(new DialogInterface.OnDismissListener() {
-                        @Override
-                        public void onDismiss(DialogInterface dialog) {
-                            finish();
-                        }
-                    }).show();
-        } else {
-            showInitialRecorder();
+
+        for (int result : grantResults) {
+            if (result == PackageManager.PERMISSION_DENIED) {
+                new MaterialDialog.Builder(this)
+                        .title(R.string.mcam_permissions_needed)
+                        .content(R.string.mcam_video_perm_warning)
+                        .positiveText(android.R.string.ok)
+                        .dismissListener(new DialogInterface.OnDismissListener() {
+                            @Override
+                            public void onDismiss(DialogInterface dialog) {
+                                finish();
+                            }
+                        }).show();
+                return;
+            }
         }
+        showInitialRecorder();
     }
 
     @Override
@@ -410,16 +353,9 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
         if (uri != null && uri.contains(".jpg")) {
             editor.putString(BaseCameraFragment.PREVIEW_IMG_KEY, uri);
         } else if (uri != null && uri.contains(".mp4")) {
-            editor.putString(BaseCameraFragment.PREVIEW_VIDEO_KEY,uri.replace("file://","").trim());
+            editor.putString(BaseCameraFragment.PREVIEW_VIDEO_KEY, uri.replace("file://", "").trim());
         }
         editor.apply();
-
-        Intent intent = getIntent();
-        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-        overridePendingTransition(0, 0);
-        startActivity(intent);
-
-        //finish();
     }
 
     @Override
@@ -437,12 +373,6 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
         return mFlashMode;
     }
 
-    @Override
-    public void toggleFlashMode() {
-        if (mFlashModes != null) {
-            mFlashMode = mFlashModes.get((mFlashModes.indexOf(mFlashMode) + 1) % mFlashModes.size());
-        }
-    }
 
     @Override
     public boolean restartTimerOnRetry() {
@@ -503,12 +433,6 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
 
     @DrawableRes
     @Override
-    public int iconRestart() {
-        return getIntent().getIntExtra(CameraIntentKey.ICON_RESTART, R.drawable.evp_action_restart);
-    }
-
-    @DrawableRes
-    @Override
     public int iconRearCamera() {
         return getIntent().getIntExtra(CameraIntentKey.ICON_REAR_CAMERA, R.drawable.exchange);
     }
@@ -537,35 +461,11 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
         return getIntent().getIntExtra(CameraIntentKey.LABEL_RETRY, R.string.mcam_retry);
     }
 
-    @Deprecated
-    @StringRes
-    @Override
-    public int labelUseVideo() {
-        return getIntent().getIntExtra(CameraIntentKey.LABEL_CONFIRM, R.string.mcam_use_video);
-    }
-
-    @StringRes
-    @Override
-    public int labelConfirm() {
-        return getIntent().getIntExtra(CameraIntentKey.LABEL_CONFIRM, useStillshot() ? R.string.mcam_use_stillshot : R.string.mcam_use_video);
-    }
-
-    @DrawableRes
-    @Override
-    public int iconStillshot() {
-        return getIntent().getIntExtra(CameraIntentKey.ICON_STILL_SHOT, R.drawable.icon_camera);
-    }
-
     @Override
     public boolean useStillshot() {
-        return getIntent().getBooleanExtra(CameraIntentKey.STILL_SHOT, false);
+        return !didRecord();
     }
 
-    @DrawableRes
-    @Override
-    public int iconFlashAuto() {
-        return getIntent().getIntExtra(CameraIntentKey.ICON_FLASH_AUTO, R.drawable.flash_on);
-    }
 
     @DrawableRes
     @Override
@@ -580,17 +480,22 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
     }
 
     @Override
-    public void setFlashModes(List<Integer> modes) {
-        mFlashModes = modes;
-    }
-
-    @Override
-    public boolean shouldHideFlash() {
-        return !useStillshot() || mFlashModes == null;
+    public void setFlashModes(Integer modes) {
+        mFlashMode = modes;
     }
 
     @Override
     public long autoRecordDelay() {
         return getIntent().getLongExtra(CameraIntentKey.AUTO_RECORD, -1);
+    }
+
+    @Override
+    public void fromVideo(boolean fromVideo) {
+        this.fromVideo = fromVideo;
+    }
+
+    @Override
+    public boolean fragmentFromVideo() {
+        return fromVideo;
     }
 }

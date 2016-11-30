@@ -1,6 +1,7 @@
 package com.afollestad.materialcamerasample.camera.internal;
 
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,7 +13,9 @@ import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 
 import com.afollestad.materialcamerasample.R;
+import com.afollestad.materialcamerasample.camera.CaptureActivity;
 import com.afollestad.materialcamerasample.camera.util.ImageUtil;
+import com.umeng.analytics.MobclickAgent;
 
 public class StillshotPreviewFragment extends BaseGalleryFragment {
 
@@ -25,7 +28,7 @@ public class StillshotPreviewFragment extends BaseGalleryFragment {
 
     public static StillshotPreviewFragment newInstance(String outputUri, boolean allowRetry, int primaryColor) {
         final StillshotPreviewFragment fragment = new StillshotPreviewFragment();
-        fragment.setRetainInstance(true);
+        //fragment.setRetainInstance(true);
         Bundle args = new Bundle();
         args.putString("output_uri", outputUri);
         args.putBoolean(CameraIntentKey.ALLOW_RETRY, allowRetry);
@@ -37,7 +40,10 @@ public class StillshotPreviewFragment extends BaseGalleryFragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.mcam_fragment_stillshot, container, false);
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
+        View view = inflater.inflate(R.layout.mcam_fragment_stillshot, container, false);
+        return view;
     }
 
     @Override
@@ -45,7 +51,7 @@ public class StillshotPreviewFragment extends BaseGalleryFragment {
         super.onViewCreated(view, savedInstanceState);
         mImageView = (ImageView) view.findViewById(R.id.stillshot_imageview);
 
-        mConfirm.setText(mInterface.labelConfirm());
+        mConfirm.setText("保存图片");
         mRetry.setText(mInterface.labelRetry());
 
         mRetry.setOnClickListener(this);
@@ -94,19 +100,54 @@ public class StillshotPreviewFragment extends BaseGalleryFragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        MobclickAgent.onPageStart("StillshotPreviewFragment");
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        MobclickAgent.onPageEnd("StillshotPreviewFragment");
+    }
+
+    @Override
     public void onClick(View v) {
         if (v.getId() == R.id.retry)
             mInterface.onRetry(mOutputUri);
         else if (v.getId() == R.id.confirm) {
             useVideo();
         }
-        if (getActivity() != null && !getActivity().isFinishing()) {
-            getActivity().finish();
+
+        ((CaptureActivity)getActivity()).setFragment(gotoCameraFragment());
+
+    }
+
+    public CameraFragment gotoCameraFragment() {
+        CameraFragment cameraFragment = CameraFragment.newInstance();
+
+        Bundle bundle = new Bundle();
+        if (mInterface.fragmentFromVideo()){
+            bundle.putBoolean("useVideo",true);
         }
+        if (mInterface.getFlashMode() == BaseCaptureActivity.FLASH_MODE_OFF){
+            bundle.putBoolean("flashOn",false);
+        }else {
+            bundle.putBoolean("flashOn",true);
+        }
+
+        cameraFragment.setArguments(bundle);
+
+        getFragmentManager().beginTransaction()
+                .replace(R.id.container, cameraFragment)
+                .commit();
+
+        return cameraFragment;
 
     }
 
     public void useVideo() {
+        mInterface.fromVideo(false);
         mInterface.useVideo(mOutputUri);
         getActivity().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + mOutputUri)));
     }

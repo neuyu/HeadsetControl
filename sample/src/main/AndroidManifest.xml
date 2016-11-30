@@ -10,33 +10,33 @@
     <uses-feature android:name="android.hardware.camera"/>
     <uses-feature android:name="android.hardware.camera.autofocus"/>
 
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"></uses-permission>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"></uses-permission>
+
     <application
         android:name=".MuApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
+        android:largeHeap="true"
         android:theme="@style/AppTheme">
+        <!-- Register library Activities -->
         <activity
-            android:name=".MainActivity"
-            android:label="@string/app_name"
+            android:name="com.afollestad.materialcamerasample.camera.CaptureActivity"
+            android:theme="@style/MaterialCamera.CaptureActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
 
-        <!-- Register library Activities -->
-        <activity
-            android:name="com.afollestad.materialcamerasample.camera.CaptureActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/MaterialCamera.CaptureActivity"/>
-        <activity
-            android:name="com.afollestad.materialcamerasample.camera.CaptureActivity2"
-            android:screenOrientation="portrait"
-            android:theme="@style/MaterialCamera.CaptureActivity"/>
+        <activity android:name=".camera.internal.PlayVideoActivity"
+                  android:theme="@style/MaterialCamera.CaptureActivity"
+                android:screenOrientation="portrait"/>
 
 
         <receiver android:name=".BluetoothConnectedReceiver">
@@ -47,6 +47,9 @@
             </intent-filter>
         </receiver>
 
+
+        <meta-data android:value="58172f3b677baa665a001bfb" android:name="UMENG_APPKEY"></meta-data>
+        <meta-data android:value="neu" android:name="UMENG_CHANNEL"/>
     </application>
 
 </manifest>

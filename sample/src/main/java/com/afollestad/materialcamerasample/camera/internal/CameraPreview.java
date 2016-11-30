@@ -47,9 +47,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 case MotionEvent.ACTION_MOVE:
                     float newDist = getFingerSpacing(event);
                     if (newDist > oldDist) {
-                        handleZoom(false,true, mCamera);
+                        handleZoom(false, true, mCamera);
                     } else if (newDist < oldDist) {
-                        handleZoom(false,false, mCamera);
+                        handleZoom(false, false, mCamera);
                     }
                     oldDist = newDist;
                     break;
@@ -69,18 +69,18 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         if (params.isZoomSupported()) {
             int maxZoom = params.getMaxZoom();
             int zoom = params.getZoom();
-            if (isZoomIn){
-                if (zoom < maxZoom){
-                    if (fromBluetooth){
+            if (isZoomIn) {
+                if (zoom < maxZoom) {
+                    if (fromBluetooth) {
                         zoom = zoom + 5;
-                    }else {
+                    } else {
                         zoom++;
                     }
                 }
-            }else if (zoom > 0){
-                if (fromBluetooth){
+            } else if (zoom > 0) {
+                if (fromBluetooth) {
                     zoom = zoom - 5;
-                }else {
+                } else {
                     zoom--;
                 }
             }
@@ -140,6 +140,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
         return new Rect(Math.round(rectF.left), Math.round(rectF.top), Math.round(rectF.right), Math.round(rectF.bottom));
     }
+
     private static int clamp(int x, int min, int max) {
         if (x > max) {
             return max;
