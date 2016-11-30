@@ -30,7 +30,7 @@ public class ImageUtil {
 
     public static void saveToDiskAsync(final CameraFragment fragment, final byte[] input, final File output, final ICallback callback) {
         final Handler handler = new Handler(fragment.getActivity().getMainLooper());
-        new Thread() {
+        Thread thread = new Thread() {
             @Override
             public void run() {
                 try {
@@ -38,16 +38,16 @@ public class ImageUtil {
                     if (fragment.isFrontCamera()) {
                         resolvedInput = mirrorImg(input);
                     }
-                    FileOutputStream outputStream = new FileOutputStream(output);
-                    outputStream.write(resolvedInput);
-                    outputStream.flush();
-                    outputStream.close();
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
                             callback.done(null);
                         }
                     });
+                    FileOutputStream outputStream = new FileOutputStream(output);
+                    outputStream.write(resolvedInput);
+                    outputStream.flush();
+                    outputStream.close();
                 } catch (final Exception e) {
                     handler.post(new Runnable() {
                         @Override
@@ -57,7 +57,9 @@ public class ImageUtil {
                     });
                 }
             }
-        }.start();
+        };
+        thread.setPriority(Thread.MAX_PRIORITY);
+        thread.start();
     }
 
     private static byte[] mirrorImg(byte[] data) {
