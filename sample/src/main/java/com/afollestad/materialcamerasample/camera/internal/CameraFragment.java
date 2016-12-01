@@ -225,8 +225,8 @@ public class CameraFragment extends BaseCameraFragment implements View.OnClickLi
             }
             //Camera.Size mStillShotSize = getHighestSupportedStillShotSize(parameters.getSupportedPictureSizes());
             parameters.setPictureSize(previewSize.width, previewSize.height);
-
             setCameraDisplayOrientation(parameters);
+            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
             mCamera.setParameters(parameters);
             createPreview();
             mMediaRecorder = new MediaRecorder();
@@ -494,14 +494,14 @@ public class CameraFragment extends BaseCameraFragment implements View.OnClickLi
                 // lets save the image to disk
                 ImageUtil.saveToDiskAsync(CameraFragment.this, data, outputPic, new ICallback() {
                     @Override
-                    public void done(Bitmap bitmap ,Exception e) {
+                    public void done(Bitmap bitmap, Exception e) {
                         if (e == null) {
                             mOutputUri = outputPic.getAbsolutePath();
                             mButtonStillshot.setEnabled(true);
-                            if (bitmap == null){
+                            if (bitmap == null) {
                                 mInterface.onShowStillshot(mOutputUri);
-                            }else {
-                                mInterface.onShowStillshot(bitmap,mOutputUri);
+                            } else {
+                                mInterface.onShowStillshot(bitmap, mOutputUri);
                             }
                         } else {
                             throwError(e);
@@ -551,7 +551,7 @@ public class CameraFragment extends BaseCameraFragment implements View.OnClickLi
     private int compensateDeviceRotation() {
         int degrees = 0;
         boolean isFrontCamera = (getCurrentCameraId() == Camera.CameraInfo.CAMERA_FACING_FRONT);
-        int deviceOrientation = ((CaptureActivity)getActivity()).getOrientation();
+        int deviceOrientation = ((CaptureActivity) getActivity()).getOrientation();
         if (deviceOrientation == Constants.ORIENT_LANDSCAPE_LEFT) {
             degrees += isFrontCamera ? 90 : 270;
         } else if (deviceOrientation == Constants.ORIENT_LANDSCAPE_RIGHT) {
@@ -581,6 +581,7 @@ public class CameraFragment extends BaseCameraFragment implements View.OnClickLi
                     (long) rhs.width * rhs.height);
         }
     }
+
     private static class SizesComparator implements Comparator<Camera.Size>, Serializable {
         private static final long serialVersionUID = 5431278455314658485L;
 
