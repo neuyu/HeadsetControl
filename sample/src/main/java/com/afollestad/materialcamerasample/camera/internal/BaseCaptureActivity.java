@@ -365,7 +365,7 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
         } else if (uri != null && uri.contains(".mp4")) {
             editor.putString(BaseCameraFragment.PREVIEW_VIDEO_KEY, uri.replace("file://", "").trim());
         }
-        editor.apply();
+        editor.commit();
     }
 
     @Override

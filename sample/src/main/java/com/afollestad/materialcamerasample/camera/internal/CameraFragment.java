@@ -3,6 +3,7 @@ package com.afollestad.materialcamerasample.camera.internal;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -59,6 +60,7 @@ public class CameraFragment extends BaseCameraFragment implements View.OnClickLi
     private boolean mIsAutoFocusing;
     private boolean mFrontCamera;
     private static int mInitVideoRotation;
+    private String mTemporaryUrl;
 
 
     public static CameraFragment newInstance() {
@@ -352,6 +354,7 @@ public class CameraFragment extends BaseCameraFragment implements View.OnClickLi
             Uri uri = Uri.fromFile(getOutputMediaFile());
             mOutputUri = uri.toString();
             mMediaRecorder.setOutputFile(uri.getPath());
+            mTemporaryUrl = mOutputUri;
 
             if (captureInterface.maxAllowedFileSize() > 0) {
                 mMediaRecorder.setMaxFileSize(captureInterface.maxAllowedFileSize());
@@ -448,6 +451,7 @@ public class CameraFragment extends BaseCameraFragment implements View.OnClickLi
         releaseRecorder();
         closeCamera();
 
+        mOutputUri = mTemporaryUrl;
         if (!mInterface.didRecord())
             mOutputUri = null;
 
@@ -498,7 +502,12 @@ public class CameraFragment extends BaseCameraFragment implements View.OnClickLi
                         if (e == null) {
                             mOutputUri = outputPic.getAbsolutePath();
                             mButtonStillshot.setEnabled(true);
-                            if (bitmap == null) {
+                            if (mInterface.didRecord()) {
+                                mInterface.fromVideo(false);
+                                mInterface.useVideo(mOutputUri);
+                                setPreviewImg();
+                                getActivity().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + mOutputUri)));
+                            } else if (bitmap == null) {
                                 mInterface.onShowStillshot(mOutputUri);
                             } else {
                                 mInterface.onShowStillshot(bitmap, mOutputUri);
