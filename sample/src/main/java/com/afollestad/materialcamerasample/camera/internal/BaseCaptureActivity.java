@@ -12,6 +12,8 @@ import android.media.CamcorderProfile;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IntDef;
@@ -26,6 +28,7 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import com.afollestad.materialcamerasample.R;
+import com.afollestad.materialcamerasample.Utils;
 import com.afollestad.materialcamerasample.camera.util.CameraUtil;
 import com.afollestad.materialdialogs.MaterialDialog;
 
@@ -69,6 +72,16 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
     public static final int FLASH_MODE_ALWAYS_ON = 1;
     public static final int FLASH_MODE_AUTO = 2;
 
+    private Handler mHandler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            if (msg != null && msg.what == 0 && msg.obj != null){
+                if (!(boolean) msg.obj){
+                    exitApp();
+                }
+            }
+        }
+    };
     @Override
     protected final void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -87,6 +100,7 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
         }
         outState.putInt("flash_mode", mFlashMode);
     }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,6 +139,7 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
             mFlashMode = savedInstanceState.getInt("flash_mode");
         }
 
+        Utils.permittedPhone(this,mHandler);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
     }
@@ -137,6 +152,7 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
         final boolean cameraGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
         final boolean audioGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
         final boolean sdcardGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+        boolean permission = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED;
 
         List<String> list = new ArrayList<>();
         if (!cameraGranted) {
@@ -147,6 +163,9 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
         }
         if (!sdcardGranted) {
             list.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
+        if (!permission){
+            list.add(Manifest.permission.READ_PHONE_STATE);
         }
 
         String[] perms = null;
@@ -300,6 +319,7 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
 
     @Override
     public void onShowStillshot(String outputUri) {
+
         Fragment frag = StillshotPreviewFragment.newInstance(outputUri, true,
                 getIntent().getIntExtra(CameraIntentKey.PRIMARY_COLOR, 0));
         getFragmentManager().beginTransaction()

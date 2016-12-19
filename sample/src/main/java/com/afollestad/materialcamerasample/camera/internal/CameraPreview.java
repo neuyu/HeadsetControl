@@ -73,6 +73,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             if (isZoomIn) {
                 if (zoom < maxZoom) {
                     if (fromBluetooth) {
+                        if (zoom + perNum > maxZoom) return;
                         zoom = zoom + perNum;
                     } else {
                         zoom++;
@@ -80,6 +81,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 }
             } else if (zoom > 0) {
                 if (fromBluetooth) {
+                    if (zoom - perNum < 0) return;
                     zoom = zoom - perNum;
                 } else {
                     zoom--;
@@ -94,11 +96,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     /**
      * 计算每次相加或减的个数
-     * @param maxZoom
-     * @return
      */
     private int calculatePerNum(int maxZoom) {
-        return maxZoom % 10 ;
+        return (int) Math.floor(maxZoom / 7);
     }
 
     public static void handleFocusMetering(MotionEvent event, Camera camera) {
@@ -131,7 +131,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             @Override
             public void onAutoFocus(boolean success, Camera camera) {
                 Camera.Parameters params = camera.getParameters();
-                params.setFocusMode(currentFocusMode);
+                //params.setFocusMode(currentFocusMode);
+                params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
                 camera.setParameters(params);
             }
         });

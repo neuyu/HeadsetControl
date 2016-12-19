@@ -84,11 +84,11 @@ public class CameraFragment extends BaseCameraFragment implements View.OnClickLi
         List<Camera.Size> bigEnough = new ArrayList<>();
         int w = aspectRatio.width;
         int h = aspectRatio.height;
+
         for (Camera.Size option : choices) {
-            if (option.height == width * h / w &&
-                    option.width >= width && option.height >= height) {
-                bigEnough.add(option);
-            }
+            if (option.height == 1080 && option.width == 1920){
+                return option;
+             }
         }
 
         // Pick the smallest of those, assuming we found any
@@ -496,6 +496,7 @@ public class CameraFragment extends BaseCameraFragment implements View.OnClickLi
             public void onPictureTaken(byte[] data, Camera camera) {
                 final File outputPic = getOutputPictureFile();
                 // lets save the image to disk
+
                 ImageUtil.saveToDiskAsync(CameraFragment.this, data, outputPic, new ICallback() {
                     @Override
                     public void done(Bitmap bitmap, Exception e) {
@@ -508,7 +509,7 @@ public class CameraFragment extends BaseCameraFragment implements View.OnClickLi
                                 setPreviewImg();
                                 getActivity().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + mOutputUri)));
                             } else if (bitmap == null) {
-                                mInterface.onShowStillshot(mOutputUri);
+                               mInterface.onShowStillshot(mOutputUri);
                             } else {
                                 mInterface.onShowStillshot(bitmap, mOutputUri);
                             }

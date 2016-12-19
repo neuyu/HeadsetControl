@@ -6,9 +6,11 @@ import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.media.ThumbnailUtils;
 import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.afollestad.materialcamerasample.camera.CaptureActivity;
 import com.afollestad.materialcamerasample.camera.ICallback;
 import com.afollestad.materialcamerasample.camera.internal.CameraFragment;
 
@@ -30,7 +32,7 @@ public class ImageUtil {
      */
 
     public static void saveToDiskAsync(final CameraFragment fragment, final byte[] input, final File output, final ICallback callback) {
-        final Handler handler = new Handler(fragment.getActivity().getMainLooper());
+        final Handler handler = ((CaptureActivity)fragment.getActivity()).getHandler();
         Thread thread = new Thread() {
             @Override
             public void run() {
@@ -49,7 +51,9 @@ public class ImageUtil {
                         thumbnailImg = Bitmap.createBitmap(cameraBitmap, 0, 0, cameraBitmap.getWidth(), cameraBitmap.getHeight(), mtx, true);
                         thumbnailImg = ThumbnailUtils.extractThumbnail(thumbnailImg, cameraBitmap.getWidth(), cameraBitmap.getHeight());
 
+
                         final Bitmap finalThumbnailImg = thumbnailImg;
+
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
@@ -57,14 +61,17 @@ public class ImageUtil {
                             }
                         });
 
-                        newBitmap = Bitmap.createBitmap(cameraBitmap, 0, 0, cameraBitmap.getWidth(), cameraBitmap.getHeight(), mtx, true);
                         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        newBitmap.compress(Bitmap.CompressFormat.PNG, 50, baos);
-
+                        finalThumbnailImg.compress(Bitmap.CompressFormat.PNG, 10, baos);
                         FileOutputStream outputStream = new FileOutputStream(output);
                         outputStream.write(baos.toByteArray());
                         outputStream.flush();
                         outputStream.close();
+
+                        Message message = Message.obtain();
+                        message.what = 0;
+                        message.obj = output.getAbsolutePath();
+                        handler.sendMessage(message);
 
                     }else {
                         FileOutputStream outputStream = new FileOutputStream(output);

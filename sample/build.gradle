@@ -29,6 +29,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    packagingOptions {
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/NOTICE'
+    }
 }
 
 dependencies {
@@ -41,4 +45,5 @@ dependencies {
     compile ('com.umeng.analytics:analytics:latest.integration'){
         transitive = false
     }
+    compile 'com.wilddog.client:wilddog-sync-android:2.0.3'
 }

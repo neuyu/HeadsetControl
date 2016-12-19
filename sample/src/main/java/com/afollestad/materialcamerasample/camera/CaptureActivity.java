@@ -1,36 +1,42 @@
 package com.afollestad.materialcamerasample.camera;
 
 import android.app.Fragment;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.graphics.Bitmap;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 
 import com.afollestad.materialcamerasample.MuApplication;
 import com.afollestad.materialcamerasample.R;
+import com.afollestad.materialcamerasample.camera.internal.BaseCameraFragment;
 import com.afollestad.materialcamerasample.camera.internal.BaseCaptureActivity;
 import com.afollestad.materialcamerasample.camera.internal.CameraFragment;
 import com.afollestad.materialcamerasample.camera.internal.PlaybackVideoFragment;
 import com.afollestad.materialcamerasample.camera.internal.StillshotPreviewFragment;
+import com.afollestad.materialcamerasample.camera.util.CameraUtil;
 import com.afollestad.materialcamerasample.camera.util.Constants;
 import com.umeng.analytics.MobclickAgent;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-public class CaptureActivity extends BaseCaptureActivity implements SensorEventListener{
+public class CaptureActivity extends BaseCaptureActivity implements SensorEventListener {
     private static final String TAG = "CaptureActivity";
     private long keyDownTime;
     private CameraFragment mFragment;
     private int mOrientation = 0;
 
     private SensorManager sm;
+    private Handler mHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +46,25 @@ public class CaptureActivity extends BaseCaptureActivity implements SensorEventL
 
         Sensor accelerometer = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sm.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
+
+        mHandler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                if (msg != null && msg.what == 0) {
+                    Fragment fragment = getFragmentManager().findFragmentById(R.id.container);
+                    if (fragment instanceof BaseCameraFragment){
+                        ((BaseCameraFragment)fragment).setPreviewImg();
+                    }
+                    if (CameraUtil.isSdCardAvailable()){
+                        sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + msg.obj)));
+                    }
+                }
+            }
+        };
+    }
+
+    public Handler getHandler() {
+        return mHandler;
     }
 
     public int getOrientation() {

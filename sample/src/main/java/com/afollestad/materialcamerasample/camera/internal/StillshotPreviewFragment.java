@@ -14,6 +14,7 @@ import android.widget.ImageView;
 
 import com.afollestad.materialcamerasample.R;
 import com.afollestad.materialcamerasample.camera.CaptureActivity;
+import com.afollestad.materialcamerasample.camera.util.CameraUtil;
 import com.afollestad.materialcamerasample.camera.util.ImageUtil;
 import com.umeng.analytics.MobclickAgent;
 
@@ -163,6 +164,8 @@ public class StillshotPreviewFragment extends BaseGalleryFragment {
     public void useVideo() {
         mInterface.fromVideo(false);
         mInterface.useVideo(mOutputUri);
-        getActivity().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + mOutputUri)));
+        if (CameraUtil.isSdCardAvailable()){
+            getActivity().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + mOutputUri)));
+        }
     }
 }

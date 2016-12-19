@@ -54,7 +54,7 @@
             android:layout_width="0dp"
             android:layout_height="@dimen/mcam_action_icon_size"
             android:layout_weight="1"
-            android:padding="6dp"/>
+            android:padding="12dp"/>
 
 
         <ImageView

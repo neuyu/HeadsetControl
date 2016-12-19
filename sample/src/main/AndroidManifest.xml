@@ -10,10 +10,10 @@
     <uses-feature android:name="android.hardware.camera"/>
     <uses-feature android:name="android.hardware.camera.autofocus"/>
 
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"></uses-permission>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
-    <uses-permission android:name="android.permission.READ_PHONE_STATE"></uses-permission>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
 
     <application
         android:name=".MuApplication"
@@ -25,7 +25,7 @@
         android:theme="@style/AppTheme">
         <!-- Register library Activities -->
         <activity
-            android:name="com.afollestad.materialcamerasample.camera.CaptureActivity"
+            android:name=".camera.CaptureActivity"
             android:theme="@style/MaterialCamera.CaptureActivity"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -50,6 +50,25 @@
 
         <meta-data android:value="58172f3b677baa665a001bfb" android:name="UMENG_APPKEY"></meta-data>
         <meta-data android:value="neu" android:name="UMENG_CHANNEL"/>
+
+
+        <provider
+                android:name="android.support.v4.content.FileProvider"
+                android:authorities="com.neu.headset.provider"
+                android:exported="false"
+                android:grantUriPermissions="true">
+            <meta-data
+                    android:name="android.support.FILE_PROVIDER_PATHS"
+                    android:resource="@xml/provider_paths"/>
+        </provider>
+
+        <receiver android:name="com.wilddog.client.receiver.WilddogAuthCastReceiver">
+            <intent-filter>
+                <action android:name="com.wilddog.wilddogauth.signinsuccess"/>
+                <action android:name="com.wilddog.wilddogauth.signoutsuccess"/>
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

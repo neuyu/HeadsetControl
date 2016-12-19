@@ -1,5 +1,6 @@
 package com.afollestad.materialcamerasample.camera.util;
 
+import android.app.Activity;
 import android.graphics.Color;
 import android.hardware.Camera;
 import android.os.Build;
@@ -40,17 +41,24 @@ public class CameraUtil {
     }
 
     @SuppressWarnings({"ConstantConditions", "ResultOfMethodCallIgnored"})
-    public static File makePictureFile(String extension) {
+    public static File makePictureFile(Activity activity, String extension) {
 
         File directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-
-        directory = new File(directory.getAbsolutePath() + File.separator + "Camera");
-        directory.mkdirs();
-
+        if (isSdCardAvailable()) {
+            directory = new File(directory.getAbsolutePath() + File.separator + "Camera");
+            directory.mkdirs();
+        }else {
+            directory = activity.getFilesDir();
+        }
 
         final String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault()).format(new Date());
 
         return new File(directory, timeStamp + extension);
+    }
+
+    public static boolean isSdCardAvailable(){
+        String state = Environment.getExternalStorageState();
+        return Environment.MEDIA_MOUNTED.equals(state);
     }
 
 

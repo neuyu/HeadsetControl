@@ -7,6 +7,10 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.umeng.analytics.MobclickAgent;
+import com.wilddog.client.SyncReference;
+import com.wilddog.client.WilddogSync;
+import com.wilddog.wilddogcore.WilddogApp;
+import com.wilddog.wilddogcore.WilddogOptions;
 
 import java.util.Set;
 
@@ -19,13 +23,25 @@ public class MuApplication extends Application {
     public static final String BLUETOOTH_NAME = "Shutter Camera";
     private static MuApplication sInstance = null;
     private boolean bluetoothConnected;
+    private SyncReference ref;
     @Override
     public void onCreate() {
         super.onCreate();
         sInstance = this;
         getConnectedBluetooth();
         MobclickAgent.openActivityDurationTrack(false);
+        initWildDog();
     }
+
+    private void initWildDog() {
+        WilddogOptions options = new WilddogOptions.Builder().setSyncUrl("https://maikexiu.wilddogio.com").build();
+        WilddogApp.initializeApp(this, options);
+        ref = WilddogSync.getInstance().getReference();
+    }
+    public SyncReference getWilddogRef(){
+        return ref;
+    }
+
 
     private void getConnectedBluetooth() {
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
